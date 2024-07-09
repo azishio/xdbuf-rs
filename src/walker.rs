@@ -9,14 +9,20 @@ pub struct Walker<'a, T, const D: usize> {
 }
 
 impl<'a, T, const D: usize> Walker<'a, T, D> {
+    /// Returns the current index.
+    ///
     /// 現在のインデックスを返します。
     pub fn index(&self) -> usize {
         self.current_index
     }
-
+    /// Returns the current index plus `step`.
+    ///
     /// 現在のインデックスから`step`を加算したインデックスを返します。
     ///
     /// # Errors
+    ///
+    /// * Error if the destination index is out of range.
+    /// * Error if the buffer length exceeds `isize::MAX`.
     ///
     /// * 移動先のインデックスが範囲外の場合エラーになります。
     /// * バッファの長さが`isize::MAX`を超えている場合エラーになります。
@@ -74,9 +80,14 @@ impl<'a, T, const D: usize> Walker<'a, T, D> {
         Ok(next_index)
     }
 
+    /// Moves to the current index plus `step`.
+    ///
     /// 現在のインデックスから`step`を加算したインデックスに移動します。
     ///
     /// # Errors
+    ///
+    /// * Error if the destination index is out of range.
+    /// * Error if the buffer length exceeds `isize::MAX`.
     ///
     /// * 移動先のインデックスが範囲外の場合エラーになります。
     /// * バッファの長さが`isize::MAX`を超えている場合エラーになります。
@@ -105,9 +116,14 @@ impl<'a, T, const D: usize> Walker<'a, T, D> {
         Ok(self)
     }
 
+    /// Returns the current index plus `step`.
+    ///
     /// 現在のインデックスから`step`を加算したインデックスに移動します。
     ///
     /// # Errors
+    ///
+    /// * Error if the destination index is out of range.
+    /// * Error if the buffer length exceeds `isize::MAX`.
     ///
     /// * 移動先のインデックスが範囲外の場合エラーになります。
     /// * バッファの長さが`isize::MAX`を超えている場合エラーになります。
@@ -136,9 +152,13 @@ impl<'a, T, const D: usize> Walker<'a, T, D> {
         Ok(self)
     }
 
+    /// Returns the next index.
+    ///
     /// 次のインデックスを返します。
     ///
     /// # Errors
+    ///
+    /// * Error if the destination index is out of range.
     ///
     /// * 移動先のインデックスが範囲外の場合エラーになります。
     ///
@@ -174,9 +194,13 @@ impl<'a, T, const D: usize> Walker<'a, T, D> {
     }
 
 
+    /// Moves to the next index.
+    ///
     /// 次のインデックスに移動します。
     ///
     /// # Errors
+    ///
+    /// * Error if the destination index is out of range.
     ///
     /// * 次のインデックスが範囲外の場合エラーになります。
     ///
@@ -201,9 +225,13 @@ impl<'a, T, const D: usize> Walker<'a, T, D> {
         Ok(self)
     }
 
+    /// Moves to the next index.
+    ///
     /// 次のインデックスに移動します。
     ///
     /// # Errors
+    ///
+    /// * Error if the destination index is out of range.
     ///
     /// * 次のインデックスが範囲外の場合エラーになります。
     ///
@@ -228,9 +256,13 @@ impl<'a, T, const D: usize> Walker<'a, T, D> {
         Ok(self)
     }
 
+    /// Returns the previous index.
+    ///
     /// 前のインデックスを返します。
     ///
     /// # Errors
+    ///
+    /// * Error if the destination index is out of range.
     ///
     /// * 前のインデックスが範囲外の場合エラーになります。
     ///
@@ -265,9 +297,13 @@ impl<'a, T, const D: usize> Walker<'a, T, D> {
         Ok(prev_index)
     }
 
+    /// Moves to the previous index.
+    ///
     /// 前のインデックスに移動します。
     ///
     /// # Errors
+    ///
+    /// * Error if the destination index is out of range.
     ///
     /// * 前のインデックスが範囲外の場合エラーになります。
     ///
@@ -292,9 +328,13 @@ impl<'a, T, const D: usize> Walker<'a, T, D> {
         Ok(self)
     }
 
+    /// Moves to the previous index.
+    ///
     /// 前のインデックスに移動します。
     ///
     /// # Errors
+    ///
+    /// * Error if the destination index is out of range.
     ///
     /// * 前のインデックスが範囲外の場合エラーになります。
     ///
@@ -319,9 +359,13 @@ impl<'a, T, const D: usize> Walker<'a, T, D> {
         Ok(self)
     }
 
+    /// Traverses elements after the current index and returns the first index that satisfies the condition.
+    ///
     /// 現在のインデックス以降の要素を走査し、条件を満たす最初のインデックスを返します。
     ///
     /// # Errors
+    ///
+    /// * An error will occur if no element is found that satisfies the condition up to the last element.
     ///
     /// * 最後の要素まで条件を満たす要素が見つからない場合エラーになります。
     ///
@@ -371,9 +415,13 @@ impl<'a, T, const D: usize> Walker<'a, T, D> {
         Ok(index)
     }
 
+    /// Traverses elements after the current index and moves to the first index that satisfies the condition.
+    ///
     /// 現在のインデックス以降の要素を走査し、条件を満たす最初のインデックスに移動します。
     ///
     /// # Errors
+    ///
+    /// * An error will occur if no element is found that satisfies the condition up to the last element.
     ///
     /// * 最後の要素まで条件を満たす要素が見つからない場合エラーになります。
     ///
@@ -397,9 +445,13 @@ impl<'a, T, const D: usize> Walker<'a, T, D> {
         Ok(self)
     }
 
+    /// Traverses elements after the current index and moves to the first index that satisfies the condition.
+    ///
     /// 現在のインデックス以降の要素を走査し、条件を満たす最初のインデックスに移動します。
     ///
     /// # Errors
+    ///
+    /// * An error will occur if no element is found that satisfies the condition up to the last element.
     ///
     /// * 最後の要素まで条件を満たす要素が見つからない場合エラーになります。
     ///

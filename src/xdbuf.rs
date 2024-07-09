@@ -4,7 +4,11 @@ use anyhow::anyhow;
 
 use crate::walker::Walker;
 
-/// n次元のバッファを表す構造体
+/// Structure representing an n-dimensional buffer
+///
+/// Reusing a single instance reduces memory allocation.
+///
+/// n次元のバッファを表す構造体です。
 ///
 /// 単一のインスタンスを再利用することで、メモリの割り当てを削減できます。
 #[derive(Debug, Clone)]
@@ -15,9 +19,13 @@ pub struct XDBuf<T, const D: usize> {
 }
 
 impl<T, const D: usize> XDBuf<T, D> {
+    /// Convert an index in array notation to a scalar index.
+    ///
     /// 配列表記のインデックスをスカラーのインデックスに変換します。
     ///
     /// # Errors
+    ///
+    /// * Error if `index` is out of range.
     ///
     /// * `index`が範囲外の場合エラーになります。
     ///
@@ -43,6 +51,8 @@ impl<T, const D: usize> XDBuf<T, D> {
         })
     }
 
+    /// Convert scalar index to array notation.
+    ///
     /// スカラーのインデックスを配列表記に変換します。
     fn to_mul_dim_index(&self, mut scalar: usize) -> [usize; D] {
         let mut index = [0; D];
@@ -55,6 +65,8 @@ impl<T, const D: usize> XDBuf<T, D> {
         index
     }
 
+    /// Checks for index integrity.
+    ///
     /// インデックスの整合性をチェックします。
     pub(crate) fn validate_index(&self, index: &[usize; D]) -> Result<(), anyhow::Error> {
         let in_range = index.iter().zip(self.size.iter()).all(|(&i, &s)| i < s);
@@ -66,9 +78,13 @@ impl<T, const D: usize> XDBuf<T, D> {
         }
     }
 
+    /// Computes the number of elements in a multidimensional array
+    ///
     /// 多次元配列の要素数を計算します
     ///
     /// # Errors
+    ///
+    /// * Error if the total product of `size` exceeds the range of `usize`.///
     ///
     /// * `size`の総積が`usize`の範囲を超える場合エラーになります。
     ///
@@ -94,6 +110,8 @@ impl<T, const D: usize> XDBuf<T, D> {
         })
     }
 
+    /// Calculates the number of elements each dimension of a multidimensional array has.
+    ///
     /// 多次元配列の各次元が持つ要素数を計算します。
     ///
     /// # Example
@@ -119,11 +137,17 @@ impl<T, const D: usize> XDBuf<T, D> {
         Ok(stride)
     }
 
+    /// Generate a new `XDBuf`.
+    ///
+    /// Allocates the specified amount of elements for each dimension and fills them with initial values.
+    ///
     /// 新しい`XDBuf`を生成します。
     ///
     /// それぞれの次元について指定した分の要素を確保し、初期値で埋めます。
     ///
     /// # Errors
+    ///
+    /// * Error if the total product of `size` exceeds the range of `usize`.
     ///
     /// * `size`の総積が`usize`の範囲を超える場合エラーになります。
     ///
@@ -151,11 +175,18 @@ impl<T, const D: usize> XDBuf<T, D> {
         })
     }
 
+    /// Generate an `XDBuf` from a `Vec<T>`.
+    ///
+    /// Initialize it using the given `Vec<T>` and treat it as a `Vec` of dimension `D`.
+    ///
     /// `Vec<T>`から`XDBuf`を生成します。
     ///
     /// 与えられた`Vec<T>`を使用して初期化し、`D`次元の`Vec`として扱います。
     ///
     /// # Errors
+    ///
+    /// * Error if the length of `initial_vec` does not match the total product of `size`.
+    /// * Error if the total product of `size` exceeds the range of `usize`.
     ///
     /// * `initial_vec`の長さが`size`の総積と一致しない場合エラーになります。
     /// * `size`の総積が`usize`の範囲を超える場合エラーになります。
@@ -191,11 +222,17 @@ impl<T, const D: usize> XDBuf<T, D> {
         })
     }
 
+    /// Initialize buffers.
+    ///
+    /// The internally allocated capacity is not affected in the shrink direction.
+    ///
     /// バッファを初期化します。
     ///
     /// 内部に割り当てられた容量には縮小方向への影響を与えません。
     ///
     /// # Errors
+    ///
+    /// * Error if the total product of `size` exceeds the range of `usize`.
     ///
     /// * `size`の総積が`usize`の範囲を超える場合エラーになります。
     ///
@@ -225,11 +262,17 @@ impl<T, const D: usize> XDBuf<T, D> {
         Ok(())
     }
 
+    /// Initialize the buffer from `Vec<T>`.
+    ///
+    /// The internally allocated capacity is not affected in the shrink direction.
+    ///
     /// `Vec<T>`からバッファを初期化します。
     ///
     /// 内部に割り当てられた容量には縮小方向への影響を与えません。
     ///
     /// # Errors
+    ///
+    /// * Error if the total product of `size` exceeds the range of `usize`.
     ///
     /// * `size`の総積が`usize`の範囲を超える場合エラーになります。
     ///
@@ -269,7 +312,10 @@ impl<T, const D: usize> XDBuf<T, D> {
         Ok(())
     }
 
-
+    /// Get a reference to the element specified by `index`.
+    ///
+    /// Returns `None` if `index` is out of range.
+    ///
     /// `index`で指定された要素の参照を取得します。
     ///
     /// `index`が範囲外の場合は`None`を返します。
@@ -295,6 +341,10 @@ impl<T, const D: usize> XDBuf<T, D> {
         self.buf.get(index)
     }
 
+    /// Get a variable reference to the element specified by `index`.
+    ///
+    /// Returns `None` if `index` is out of range.
+    ///
     /// `index`で指定された要素の可変参照を取得します。
     ///
     /// `index`が範囲外の場合は`None`を返します。
@@ -322,9 +372,13 @@ impl<T, const D: usize> XDBuf<T, D> {
         Some(&mut self.buf[index])
     }
 
+    /// Set `value` to the element specified by `index`.
+    ///
     /// `index`で指定された要素に`value`を設定します。
     ///
     /// # Errors
+    ///
+    /// * Error if `index` is out of range.
     ///
     /// * `index`が範囲外の場合エラーになります。
     pub fn set(&mut self, index: usize, value: T) -> Result<(), anyhow::Error> {
@@ -337,9 +391,13 @@ impl<T, const D: usize> XDBuf<T, D> {
         Ok(())
     }
 
-    ///　指定された`index`を初期位置として`Walker`を生成します。
+    /// Generates a `Walker` with the specified `index` as its initial position.
+    ///
+    /// 指定された`index`を初期位置として`Walker`を生成します。
     ///
     /// # Errors
+    ///
+    /// * Error if `index` is out of range.
     ///
     /// * `index`が範囲外の場合エラーになります。
     ///
@@ -358,12 +416,14 @@ impl<T, const D: usize> XDBuf<T, D> {
 
         Ok(
             Walker {
-                buf_into: &self,
+                buf_into: self,
                 current_index: scalar,
             }
         )
     }
 
+    /// Returns the number of elements in the buffer.
+    ///
     /// バッファの要素数を返します。
     ///
     /// # Example
@@ -378,6 +438,8 @@ impl<T, const D: usize> XDBuf<T, D> {
         self.buf.len()
     }
 
+    /// Returns a range of buffer indices.
+    ///
     /// バッファのインデックスの範囲を返します。
     ///
     /// # Example
@@ -392,6 +454,8 @@ impl<T, const D: usize> XDBuf<T, D> {
         0..self.buf.len()
     }
 
+    /// Returns the number of elements each buffer dimension has.
+    ///
     /// バッファの各次元が持つ要素数を返します。
     ///
     /// # Example
@@ -406,7 +470,9 @@ impl<T, const D: usize> XDBuf<T, D> {
         &self.stride
     }
 
-    /// バッファのキャパシティをできるだけ縮小します。
+    /// Reduce buffer capacity as much as possible.
+    ///
+    /// バッファが確保しているメモリ容量をできるだけ縮小します。
     ///
     /// # Example
     ///
