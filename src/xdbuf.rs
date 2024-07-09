@@ -55,7 +55,7 @@ impl<T, const D: usize> XDBuf<T, D> {
         index
     }
 
-    ///　インデックスの整合性をチェックします。
+    /// インデックスの整合性をチェックします。
     pub(crate) fn validate_index(&self, index: &[usize; D]) -> Result<(), anyhow::Error> {
         let in_range = index.iter().zip(self.size.iter()).all(|(&i, &s)| i < s);
 
@@ -66,7 +66,7 @@ impl<T, const D: usize> XDBuf<T, D> {
         }
     }
 
-    ///　多次元配列の要素数を計算します
+    /// 多次元配列の要素数を計算します
     ///
     /// # Errors
     ///
@@ -83,6 +83,10 @@ impl<T, const D: usize> XDBuf<T, D> {
     /// assert_eq!(total_size, 60);
     /// ```
     pub fn calc_total_size(size: &[usize; D]) -> Result<usize, anyhow::Error> {
+        if size.iter().any(|&v| v == 0) {
+            return Err(anyhow!("size is out of range"));
+        }
+
         size.iter().try_fold(1_usize, |acc, &v| {
             acc.checked_mul(v).ok_or(
                 anyhow!("size is out of range")
@@ -201,11 +205,11 @@ impl<T, const D: usize> XDBuf<T, D> {
     /// use xdbuf::XDBuf;
     ///
     /// let mut buf = XDBuf::<i32, 3>::new([3, 4, 5], 0).unwrap();
-    /// assert_eq!(buf.buf_len(), 60);
+    /// assert_eq!(buf.len(), 60);
     /// assert_eq!(buf.get(0), Some(&0));
     ///
     /// buf.init([1, 2, 3], 1).unwrap();
-    /// assert_eq!(buf.buf_len(), 6);
+    /// assert_eq!(buf.len(), 6);
     /// assert_eq!(buf.get(0), Some(&1));
     /// ```
     pub fn init(&mut self, size: [usize; D], initial_value: T) -> Result<(), anyhow::Error>
@@ -235,18 +239,18 @@ impl<T, const D: usize> XDBuf<T, D> {
     /// use xdbuf::XDBuf;
     ///
     /// let mut buf = XDBuf::<i32, 3>::new([3, 4, 5], 0).unwrap();
-    /// assert_eq!(buf.buf_len(), 60);
+    /// assert_eq!(buf.len(), 60);
     ///
     /// let initial_vec = vec![1; 6];
     /// buf.init_with_vec([1, 2, 3], initial_vec).unwrap();
-    /// assert_eq!(buf.buf_len(), 6);
+    /// assert_eq!(buf.len(), 6);
     /// ```
     ///
     /// ```should_panic
     /// use xdbuf::XDBuf;
     ///
     /// let mut buf = XDBuf::<i32, 3>::new([3, 4, 5], 0).unwrap();
-    /// assert_eq!(buf.buf_len(), 60);
+    /// assert_eq!(buf.len(), 60);
     ///
     /// let initial_vec = vec![1; 5]; // 5 != 1 * 2 * 3
     /// buf.init_with_vec([1, 2, 3], initial_vec).unwrap(); // panic!
@@ -354,7 +358,7 @@ impl<T, const D: usize> XDBuf<T, D> {
 
         Ok(
             Walker {
-                buf_into: self,
+                buf_into: &self,
                 current_index: scalar,
             }
         )
@@ -368,9 +372,9 @@ impl<T, const D: usize> XDBuf<T, D> {
     /// use xdbuf::XDBuf;
     ///
     /// let buf = XDBuf::<i32, 3>::new([3, 4, 5], 0).unwrap();
-    /// assert_eq!(buf.buf_len(), 60);
+    /// assert_eq!(buf.len(), 60);
     /// ```
-    pub fn buf_len(&self) -> usize {
+    pub fn len(&self) -> usize {
         self.buf.len()
     }
 
@@ -382,9 +386,9 @@ impl<T, const D: usize> XDBuf<T, D> {
     /// use xdbuf::XDBuf;
     ///
     /// let buf = XDBuf::<i32, 3>::new([3, 4, 5], 0).unwrap();
-    /// assert_eq!(buf.buf_range(), 0..60);
+    /// assert_eq!(buf.idx_range(), 0..60);
     /// ```
-    pub fn buf_range(&self) -> Range<usize> {
+    pub fn idx_range(&self) -> Range<usize> {
         0..self.buf.len()
     }
 
