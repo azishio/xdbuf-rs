@@ -1,11 +1,11 @@
 use anyhow::anyhow;
 
-use crate::xdbuf::XDBuf;
+use crate::XDBuf;
 
 /// `XDBuf`におけるインデックス操作を行うための構造体
 pub struct Walker<'a, T, const D: usize> {
-    pub(crate) buf_into: &'a XDBuf<T, D>,
-    pub(crate) current_index: usize,
+    pub(super) buf_into: &'a XDBuf<T, D>,
+    pub(super) current_index: usize,
 }
 
 impl<'a, T, const D: usize> Walker<'a, T, D> {
@@ -67,7 +67,7 @@ impl<'a, T, const D: usize> Walker<'a, T, D> {
             anyhow::anyhow!("Index out of range")
         )?.try_into()?;
 
-        if next_index >= self.buf_into.buf_len() {
+        if next_index >= self.buf_into.len() {
             return Err(anyhow::anyhow!("Index out of range"));
         }
 
@@ -166,7 +166,7 @@ impl<'a, T, const D: usize> Walker<'a, T, D> {
             anyhow::anyhow!("Index out of range")
         )?;
 
-        if next_index >= self.buf_into.buf_len() {
+        if next_index >= self.buf_into.len() {
             return Err(anyhow::anyhow!("Index out of range"));
         }
 
@@ -258,7 +258,7 @@ impl<'a, T, const D: usize> Walker<'a, T, D> {
             anyhow::anyhow!("Index out of range")
         )?;
 
-        if prev_index >= self.buf_into.buf_len() {
+        if prev_index >= self.buf_into.len() {
             return Err(anyhow::anyhow!("Index out of range"));
         }
 
@@ -363,7 +363,7 @@ impl<'a, T, const D: usize> Walker<'a, T, D> {
                 anyhow!("No element satisfying the function exists")
             )?;
 
-            if index >= self.buf_into.buf_len() {
+            if index >= self.buf_into.len() {
                 return Err(anyhow!("No element satisfying the function exists"));
             }
         }
