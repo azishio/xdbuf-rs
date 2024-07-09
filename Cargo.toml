@@ -1,7 +1,19 @@
 [package]
 name = "xdbuf"
 version = "0.1.0"
+authors = ["azishio"]
 edition = "2021"
+description = "Provides a reusable multi-dimensional buffer."
+
+documentation = "https://docs.rs/xdbuf"
+homepage = "https://crates.io/crates/xdbuf"
+repository = "https://github.com/azishio/xdbuf-rs"
+
+readme = "README.md"
+
+keywords = ["buffer", "array", "index", "multi-dimensional"]
+categories = ["data-structures", "mathematics"]
+license = "MIT OR Apache-2.0"
 
 [dependencies]
 anyhow = "1.0.86"
