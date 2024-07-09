@@ -13,9 +13,17 @@ impl<'a, T, const D: usize> Walker<'a, T, D> {
     /// Returns the current index.
     ///
     /// 現在のインデックスを返します。
-    pub fn index(&self) -> usize {
+    pub fn index_s(&self) -> usize {
         self.current_index
     }
+
+    /// Returns the current index.
+    ///
+    /// 現在のインデックスを返します。
+    pub fn index_m(&self) -> [usize; D] {
+        self.buf_into.to_mul_dim_index(self.current_index)
+    }
+
     /// Returns the current index plus `step`.
     ///
     /// 現在のインデックスから`step`を加算したインデックスを返します。
@@ -35,13 +43,13 @@ impl<'a, T, const D: usize> Walker<'a, T, D> {
     ///
     /// let initial_vec = (1..=9).collect::<Vec<_>>();
     /// let buf = XDBuf::new_with_vec([3, 3], initial_vec).unwrap();
-    /// let walker = buf.walker_from([1, 1]).unwrap();
+    /// let walker = buf.walker_from_m([1, 1]).unwrap();
     ///
     /// //[0, 1, 2
     /// // 3, 4, 5
     /// // 6, 7, 8]
     ///
-    /// let current_index = walker.index();
+    /// let current_index = walker.index_s();
     /// assert_eq!(current_index, 4);
     ///
     /// let next_index = walker.index_(&[1, 0]).unwrap();
@@ -100,17 +108,17 @@ impl<'a, T, const D: usize> Walker<'a, T, D> {
     ///
     /// let initial_vec = (1..=9).collect::<Vec<_>>();
     /// let buf = XDBuf::new_with_vec([3, 3], initial_vec).unwrap();
-    /// let mut walker = buf.walker_from([1, 1]).unwrap();
+    /// let mut walker = buf.walker_from_m([1, 1]).unwrap();
     ///
     /// //[0, 1, 2
     /// // 3, 4, 5
     /// // 6, 7, 8]
     ///
     /// walker.as_(&[1, 1]).unwrap();
-    /// assert_eq!(walker.index(), 8);
+    /// assert_eq!(walker.index_s(), 8);
     ///
     /// walker.as_(&[-1, 0]).unwrap();
-    /// assert_eq!(walker.index(), 7);
+    /// assert_eq!(walker.index_s(), 7);
     ///```
     pub fn as_(&mut self, step: &[isize; D]) -> Result<&mut Self, anyhow::Error> {
         self.current_index = self.index_(step)?;
@@ -136,17 +144,17 @@ impl<'a, T, const D: usize> Walker<'a, T, D> {
     ///
     /// let initial_vec = (1..=9).collect::<Vec<_>>();
     /// let buf = XDBuf::new_with_vec([3, 3], initial_vec).unwrap();
-    /// let mut walker = buf.walker_from([1, 1]).unwrap();
+    /// let mut walker = buf.walker_from_m([1, 1]).unwrap();
     ///
     /// //[0, 1, 2
     /// // 3, 4, 5
     /// // 6, 7, 8]
     ///
     /// let walker = walker.into_(&[1, 1]).unwrap();
-    /// assert_eq!(walker.index(), 8);
+    /// assert_eq!(walker.index_s(), 8);
     ///
     /// let walker = walker.into_(&[-1, 0]).unwrap();
-    /// assert_eq!(walker.index(), 7);
+    /// assert_eq!(walker.index_s(), 7);
     ///```
     pub fn into_(mut self, step: &[isize; D]) -> Result<Self, anyhow::Error> {
         self.as_(step)?;
@@ -170,13 +178,13 @@ impl<'a, T, const D: usize> Walker<'a, T, D> {
     ///
     /// let initial_vec = (1..=9).collect::<Vec<_>>();
     /// let buf = XDBuf::new_with_vec([3, 3], initial_vec).unwrap();
-    /// let walker = buf.walker_from([2, 1]).unwrap();
+    /// let walker = buf.walker_from_m([2, 1]).unwrap();
     ///
     /// //[0, 1, 2
     /// // 3, 4, 5
     /// // 6, 7, 8]
     ///
-    /// let current_index = walker.index();
+    /// let current_index = walker.index_s();
     /// assert_eq!(current_index, 5);
     ///
     /// let next_index = walker.next_index().unwrap();
@@ -212,14 +220,14 @@ impl<'a, T, const D: usize> Walker<'a, T, D> {
     ///
     /// let initial_vec = (1..=9).collect::<Vec<_>>();
     /// let buf = XDBuf::new_with_vec([3, 3], initial_vec).unwrap();
-    /// let mut walker = buf.walker_from([2, 1]).unwrap();
+    /// let mut walker = buf.walker_from_m([2, 1]).unwrap();
     ///
     /// //[0, 1, 2
     /// // 3, 4, 5
     /// // 6, 7, 8]
     ///
     /// walker.as_next().unwrap();
-    /// assert_eq!(walker.index(), 6);
+    /// assert_eq!(walker.index_s(), 6);
     /// ```
     pub fn as_next(&mut self) -> Result<&mut Self, anyhow::Error> {
         self.current_index = self.next_index()?;
@@ -243,14 +251,14 @@ impl<'a, T, const D: usize> Walker<'a, T, D> {
     ///
     /// let initial_vec = (1..=9).collect::<Vec<_>>();
     /// let buf = XDBuf::new_with_vec([3, 3], initial_vec).unwrap();
-    /// let mut walker = buf.walker_from([2, 1]).unwrap();
+    /// let mut walker = buf.walker_from_m([2, 1]).unwrap();
     ///
     /// //[0, 1, 2
     /// // 3, 4, 5
     /// // 6, 7, 8]
     ///
     /// let walker = walker.into_next().unwrap();
-    /// assert_eq!(walker.index(), 6);
+    /// assert_eq!(walker.index_s(), 6);
     /// ```
     pub fn into_next(mut self) -> Result<Self, anyhow::Error> {
         self.as_next()?;
@@ -274,13 +282,13 @@ impl<'a, T, const D: usize> Walker<'a, T, D> {
     ///
     /// let initial_vec = (1..=9).collect::<Vec<_>>();
     /// let buf = XDBuf::new_with_vec([3, 3], initial_vec).unwrap();
-    /// let walker = buf.walker_from([2, 1]).unwrap();
+    /// let walker = buf.walker_from_m([2, 1]).unwrap();
     ///
     /// //[0, 1, 2
     /// // 3, 4, 5
     /// // 6, 7, 8]
     ///
-    /// let current_index = walker.index();
+    /// let current_index = walker.index_s();
     /// assert_eq!(current_index, 5);
     ///
     /// let prev_index = walker.prev_index().unwrap();
@@ -315,14 +323,14 @@ impl<'a, T, const D: usize> Walker<'a, T, D> {
     ///
     /// let initial_vec = (1..=9).collect::<Vec<_>>();
     /// let buf = XDBuf::new_with_vec([3, 3], initial_vec).unwrap();
-    /// let mut walker = buf.walker_from([2, 1]).unwrap();
+    /// let mut walker = buf.walker_from_m([2, 1]).unwrap();
     ///
     /// //[0, 1, 2
     /// // 3, 4, 5
     /// // 6, 7, 8]
     ///
     /// walker.as_prev().unwrap();
-    /// assert_eq!(walker.index(), 4);
+    /// assert_eq!(walker.index_s(), 4);
     /// ```
     pub fn as_prev(&mut self) -> Result<&mut Self, anyhow::Error> {
         self.current_index = self.prev_index()?;
@@ -346,14 +354,14 @@ impl<'a, T, const D: usize> Walker<'a, T, D> {
     ///
     /// let initial_vec = (1..=9).collect::<Vec<_>>();
     /// let buf = XDBuf::new_with_vec([3, 3], initial_vec).unwrap();
-    /// let mut walker = buf.walker_from([2, 1]).unwrap();
+    /// let mut walker = buf.walker_from_m([2, 1]).unwrap();
     ///
     /// //[0, 1, 2
     /// // 3, 4, 5
     /// // 6, 7, 8]
     ///
     /// let walker = walker.into_prev().unwrap();
-    /// assert_eq!(walker.index(), 4);
+    /// assert_eq!(walker.index_s(), 4);
     /// ```
     pub fn into_prev(mut self) -> Result<Self, anyhow::Error> {
         self.as_prev()?;
@@ -377,11 +385,11 @@ impl<'a, T, const D: usize> Walker<'a, T, D> {
     ///
     /// let initial_vec = (1..=9).collect::<Vec<_>>();
     /// let buf = XDBuf::new_with_vec([3, 3], initial_vec).unwrap();
-    /// let walker = buf.walker_from([0, 0]).unwrap();
+    /// let walker = buf.walker_from_m([0, 0]).unwrap();
     ///
-    /// let current_index = walker.index();
+    /// let current_index = walker.index_s();
     /// assert_eq!(current_index, 0);
-    /// assert_eq!(buf.get(walker.index()), Some(&1));
+    /// assert_eq!(buf.get(walker.index_s()), Some(&1));
     ///
     /// let index = walker.index_until(|&x, _i| x == 5).unwrap();
     /// assert_eq!(index, 4);
@@ -392,11 +400,11 @@ impl<'a, T, const D: usize> Walker<'a, T, D> {
     ///
     /// let initial_vec = (1..=9).collect::<Vec<_>>();
     /// let buf = XDBuf::new_with_vec([3, 3], initial_vec).unwrap();
-    /// let walker = buf.walker_from([0, 0]).unwrap();
+    /// let walker = buf.walker_from_m([0, 0]).unwrap();
     ///
-    /// let current_index = walker.index();
+    /// let current_index = walker.index_s();
     /// assert_eq!(current_index, 0);
-    /// assert_eq!(buf.get(walker.index()), Some(&1));
+    /// assert_eq!(buf.get(walker.index_s()), Some(&1));
     ///
     /// let index = walker.index_until(|&x, _i| x < 0).unwrap(); // panic!
     /// ```
@@ -433,13 +441,13 @@ impl<'a, T, const D: usize> Walker<'a, T, D> {
     ///
     /// let initial_vec = (1..=9).collect::<Vec<_>>();
     /// let buf = XDBuf::new_with_vec([3, 3], initial_vec).unwrap();
-    /// let mut walker = buf.walker_from([0, 0]).unwrap();
+    /// let mut walker = buf.walker_from_m([0, 0]).unwrap();
     ///
-    /// let current_index = walker.index();
+    /// let current_index = walker.index_s();
     /// assert_eq!(current_index, 0);
     ///
     /// walker.as_until(|&x, _i| x == 5).unwrap();
-    /// assert_eq!(walker.index(), 4);
+    /// assert_eq!(walker.index_s(), 4);
     /// ```
     pub fn as_until(&mut self, f: impl Fn(&T, usize) -> bool) -> Result<&mut Self, anyhow::Error> {
         self.current_index = self.index_until(f)?;
@@ -463,13 +471,13 @@ impl<'a, T, const D: usize> Walker<'a, T, D> {
     ///
     /// let initial_vec = (1..=9).collect::<Vec<_>>();
     /// let buf = XDBuf::new_with_vec([3, 3], initial_vec).unwrap();
-    /// let mut walker = buf.walker_from([0, 0]).unwrap();
+    /// let mut walker = buf.walker_from_m([0, 0]).unwrap();
     ///
-    /// let current_index = walker.index();
+    /// let current_index = walker.index_s();
     /// assert_eq!(current_index, 0);
     ///
     /// let walker = walker.into_until(|&x, _i| x == 5).unwrap();
-    /// assert_eq!(walker.index(), 4);
+    /// assert_eq!(walker.index_s(), 4);
     /// ```
     pub fn into_until(mut self, f: impl Fn(&T, usize) -> bool) -> Result<Self, anyhow::Error> {
         self.as_until(f)?;

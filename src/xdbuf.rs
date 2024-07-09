@@ -420,39 +420,36 @@ impl<T, const D: usize> XDBuf<T, D> {
     /// use xdbuf::XDBuf;
     ///
     /// let mut buf = XDBuf::<i32, 3>::new([3, 4, 5], 0).unwrap();
-    /// let walker = buf.walker_from([0, 0, 0]).unwrap();
+    /// let walker = buf.walker_from_m([0, 0, 0]).unwrap();
     /// ```
-    pub fn walker_from(&self, index: [usize; D]) -> Result<Walker<T, D>, anyhow::Error> {
+    pub fn walker_from_m(&self, index: [usize; D]) -> Result<Walker<T, D>, anyhow::Error> {
         self.validate_index(&index)?;
 
         let scalar = self.to_scalar_index(&index)?;
 
-        Ok(
-            Walker {
-                buf_into: self,
-                current_index: scalar,
-            }
-        )
+        self.walker_from_s(scalar)
     }
 
-    ///　指定されたスカラーのインデックスを初期位置として`Walker`を生成します。
-    /// 
+    /// Generates a `Walker` with the specified `index` as its initial position.
+    ///
+    /// 指定された`index`を初期位置として`Walker`を生成します。
+    ///
     /// # Errors
-    /// 
+    ///
     /// * Error if `scalar_index` is out of range.
-    /// 
+    ///
     /// * `scalar_index`が範囲外の場合エラーになります。
-    /// 
+    ///
     /// # Example
-    /// 
-    /// ```
+    ///
+    ///```
     /// use xdbuf::XDBuf;
-    /// 
+    ///
     /// let mut buf = XDBuf::<i32, 3>::new([3, 4, 5], 0).unwrap();
-    /// let walker_m = buf.walker_from([0, 0, 0]).unwrap();
+    /// let walker_m = buf.walker_from_m([0, 0, 0]).unwrap();
     /// let walker_s = buf.walker_from_s(0).unwrap();
-    /// 
-    /// assert_eq!(walker_m.index(), walker_s.index());
+    ///
+    /// assert_eq!(walker_m.index_s(), walker_s.index_s());
     /// ```
     pub fn walker_from_s(&self, scalar_index: usize) -> Result<Walker<T, D>, anyhow::Error> {
         if scalar_index >= self.buf.len() {
@@ -533,5 +530,21 @@ impl<T, const D: usize> XDBuf<T, D> {
     /// ```
     pub fn shrink_to_fit(&mut self) {
         self.buf.shrink_to_fit();
+    }
+
+    /// Returns the size of each dimension of the buffer.
+    ///
+    /// バッファの各次元のサイズを返します。
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use xdbuf::XDBuf;
+    ///
+    /// let buf = XDBuf::<i32, 3>::new([3, 4, 5], 0).unwrap();
+    /// assert_eq!(buf.size(), [3, 4, 5]);
+    /// ```
+    pub fn size(&self) -> [usize; D] {
+        self.size
     }
 }
