@@ -3,6 +3,7 @@ use anyhow::anyhow;
 use crate::XDBuf;
 
 /// `XDBuf`におけるインデックス操作を行うための構造体
+#[derive(Debug, Clone, Copy)]
 pub struct Walker<'a, T, const D: usize> {
     pub(super) buf_into: &'a XDBuf<T, D>,
     pub(super) current_index: usize,
