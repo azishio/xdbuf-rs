@@ -1,6 +1,6 @@
 English | [日本語](README.ja.md)
 
-# xdubf
+# xdbuf
 
 Provides a reusable multidimensional buffer.
 It can be reinitialized to any size as long as the dimensions are the same, minimizing the number of memory
