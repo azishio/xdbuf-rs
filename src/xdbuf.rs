@@ -54,7 +54,20 @@ impl<T, const D: usize> XDBuf<T, D> {
     /// Convert scalar index to array notation.
     ///
     /// スカラーのインデックスを配列表記に変換します。
-    fn to_mul_dim_index(&self, mut scalar: usize) -> [usize; D] {
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use xdbuf::XDBuf;
+    ///
+    /// let buf = XDBuf::<i32, 3>::new([3, 4, 5], 0).unwrap();
+    ///
+    /// let scalar = 1 + 2*3 + 3*4*3;
+    /// let index = buf.to_mul_dim_index(scalar);
+    ///
+    /// assert_eq!(index, [1, 2, 3]);
+    /// ```
+    pub fn to_mul_dim_index(&self, mut scalar: usize) -> [usize; D] {
         let mut index = [0; D];
 
         for i in (0..D).rev() {
@@ -418,6 +431,38 @@ impl<T, const D: usize> XDBuf<T, D> {
             Walker {
                 buf_into: self,
                 current_index: scalar,
+            }
+        )
+    }
+
+    ///　指定されたスカラーのインデックスを初期位置として`Walker`を生成します。
+    /// 
+    /// # Errors
+    /// 
+    /// * Error if `scalar_index` is out of range.
+    /// 
+    /// * `scalar_index`が範囲外の場合エラーになります。
+    /// 
+    /// # Example
+    /// 
+    /// ```
+    /// use xdbuf::XDBuf;
+    /// 
+    /// let mut buf = XDBuf::<i32, 3>::new([3, 4, 5], 0).unwrap();
+    /// let walker_m = buf.walker_from([0, 0, 0]).unwrap();
+    /// let walker_s = buf.walker_from_s(0).unwrap();
+    /// 
+    /// assert_eq!(walker_m.index(), walker_s.index());
+    /// ```
+    pub fn walker_from_s(&self, scalar_index: usize) -> Result<Walker<T, D>, anyhow::Error> {
+        if scalar_index >= self.buf.len() {
+            return Err(anyhow!("index is out of range"));
+        }
+
+        Ok(
+            Walker {
+                buf_into: self,
+                current_index: scalar_index,
             }
         )
     }
