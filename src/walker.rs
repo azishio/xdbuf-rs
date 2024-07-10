@@ -474,3 +474,75 @@ impl<'a, T, const D: usize> Walker<'a, T, D> {
         Ok(self)
     }
 }
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn _index_method_works() {
+        let buf = XDBuf::new_with_vec([3, 3], (1..=9).collect()).unwrap();
+        let walker = buf.walker_from_m([1, 1]).unwrap();
+        assert_eq!(walker.index_m(), [1, 1]);
+
+        // 1, 2, 3
+        // 4, 5, 6
+        // 7, 8, 9
+
+        let index = walker.index_(&[0, 0]).unwrap();
+        assert_eq!(buf.get(index), Some(&5));
+
+        let index = walker.index_(&[1, 0]).unwrap();
+        assert_eq!(buf.get(index), Some(&6));
+
+        let index = walker.index_(&[-1, 0]).unwrap();
+        assert_eq!(buf.get(index), Some(&4));
+
+        let index = walker.index_(&[0, 1]).unwrap();
+        assert_eq!(buf.get(index), Some(&8));
+
+        let index = walker.index_(&[0, -1]).unwrap();
+        assert_eq!(buf.get(index), Some(&2));
+
+        let index = walker.index_(&[1, 1]).unwrap();
+        assert_eq!(buf.get(index), Some(&9));
+
+        let index = walker.index_(&[-1, -1]).unwrap();
+        assert_eq!(buf.get(index), Some(&1));
+
+        let index = walker.index_(&[1, -1]).unwrap();
+        assert_eq!(buf.get(index), Some(&3));
+
+        let index = walker.index_(&[-1, 1]).unwrap();
+        assert_eq!(buf.get(index), Some(&7));
+    }
+
+    #[test]
+    fn _index_method_dose_not_overflow() {
+        let buf = XDBuf::new_with_vec([3, 3], (1..=9).collect()).unwrap();
+        let walker = buf.walker_from_m([1, 1]).unwrap();
+        assert_eq!(walker.index_m(), [1, 1]);
+
+        // 1, 2, 3
+        // 4, 5, 6
+        // 7, 8, 9
+
+        let index = walker.index_(&[2, 0]);
+        assert!(index.is_err());
+
+        let index = walker.index_(&[-2, 0]);
+        assert!(index.is_err());
+
+        let index = walker.index_(&[0, 2]);
+        assert!(index.is_err());
+
+        let index = walker.index_(&[0, -2]);
+        assert!(index.is_err());
+
+        let index = walker.index_(&[2, 2]);
+        assert!(index.is_err());
+
+        let index = walker.index_(&[-2, -2]);
+        assert!(index.is_err());
+    }
+}
