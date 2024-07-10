@@ -59,34 +59,24 @@ impl<'a, T, const D: usize> Walker<'a, T, D> {
     /// assert_eq!(next_index, 7);
     ///```
     pub fn index_(&self, step: &[isize; D]) -> Result<usize, anyhow::Error> {
-        let mut increment = 0_isize;
+        let mut index = self.buf_into.to_mul_dim_index(self.current_index);
 
-        step.iter().zip(self.buf_into.stride()).try_for_each(
-            |(&step, &stride)| {
-                let stride = stride.try_into()?;
+        index.iter_mut().zip(step).zip(self.buf_into.size()).try_for_each(
+            |((current_index, &step), size)| {
+                let moved_index = current_index.checked_add_signed(step).ok_or(
+                    anyhow!("Index out of range")
+                )?;
 
-                increment = increment
-                    .checked_add(
-                        step.checked_mul(stride)
-                            .ok_or(anyhow!(""))?
-                    ).ok_or(anyhow!(""))?;
+                if moved_index >= size {
+                    return Err(anyhow!("Index out of range"));
+                }
+
+                *current_index = moved_index;
 
                 Ok(())
-            }
-        ).map_err(
-            |_: anyhow::Error| anyhow!("Calculating indexes using step can only be used when the buffer length is less than or equal to usize::MAX.")
-        )?;
+            })?;
 
-        let current_index: isize = self.current_index.try_into()?;
-        let next_index: usize = current_index.checked_add(increment).ok_or(
-            anyhow::anyhow!("Index out of range")
-        )?.try_into()?;
-
-        if next_index >= self.buf_into.len() {
-            return Err(anyhow::anyhow!("Index out of range"));
-        }
-
-        Ok(next_index)
+        Ok(self.buf_into.to_scalar_index(&index)?)
     }
 
     /// Moves to the current index plus `step`.
