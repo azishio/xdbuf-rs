@@ -28,20 +28,20 @@ fn main() -> Result<(), anyhow::Error> {
     assert_eq!(buf.get(8), Some(&9));
 
     // 配列を探索する`Walker`を生成
-    let mut walker = buf.walker_from([1, 1])?;
-    assert_eq!(buf.get(walker.index()), Some(&5));
+    let mut walker = buf.walker_from_m([1, 1])?;
+    assert_eq!(buf.get(walker.index_s()), Some(&5));
 
     //下に移動
     assert_eq!(step2d::DOWN, [0, -1]);
     walker.as_(&step2d::DOWN)?;
-    assert_eq!(buf.get(walker.index()), Some(&2));
+    assert_eq!(buf.get(walker.index_s()), Some(&2));
 
     // 値が8以上になるまで移動
     walker.as_until(|&value, _index| { value >= 8 })?;
-    assert_eq!(buf.get(walker.index()), Some(&8));
+    assert_eq!(buf.get(walker.index_s()), Some(&8));
 
     // 値の書き換え
-    buf.set(walker.index(), 100)?;
+    buf.set(walker.index_s(), 100)?;
 
     Ok(())
 }
